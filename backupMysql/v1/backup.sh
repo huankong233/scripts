@@ -1,6 +1,6 @@
 #!/bin/bash
 #备份目录
-MYSQL_FILEDIR=/var/lib/docker/volumes/ce1991a4e6f1c50776f6ee75450c896c117747eefb7ed6e9cdfe48f782e2e9f1/_data
+MYSQL_FILEDIR=/storage/mysql/date
 BACKUP_FILEDIR=/storage/mysql/backups
 #当前日期
 DATE=$(date +%Y-%m-%d-%T)

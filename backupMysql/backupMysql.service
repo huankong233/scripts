@@ -1,0 +1,11 @@
+[Unit]
+Description=backupMysql
+Wants=backupMysql.timer
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /storage/mysql/backup.sh
+User=root
+
+[Install]
+WantedBy=multi-user.target
