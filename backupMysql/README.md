@@ -13,7 +13,6 @@
 
 3.测试运行一次
 
-
 ### (2)配置定时器
 
 1.将`backupMysql.service`和`backupMysql.timer`放到`/etc/systemd/system/`下
@@ -25,6 +24,5 @@
 3.使用`systemctl start backupMysql.service`测试脚本运行状态
 
 4.使用`systemctl start backupMysql.timer`激活计时器
-
 
 ### (3)过一段时间自行检查效果
