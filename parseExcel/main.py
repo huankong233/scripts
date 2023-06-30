@@ -61,5 +61,6 @@ if __name__ == '__main__':
         os.mkdir(f"{outDir}/{name}")  # 创建文件夹
         for file, path in value.items():
             if file != "name":
+                print(f"姓名:{name},数据名:{file},数据源:{path}")
                 root, ext = os.path.splitext(path)
                 shutil.copy(path, f"{outDir}/{name}/{file}{ext}")  # 复制文件到文件夹
