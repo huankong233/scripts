@@ -1,13 +1,12 @@
 import os
-from glob import glob
 from win32com import client as wc
 from docx import Document
 from docxcompose.composer import Composer
 
-# 获取doc
 original_docx_path = 'C:/Users/huan_kong/Desktop/123/周兴瑞/日总结'
 new_docx_path = 'C:/Users/huan_kong/Desktop/123/周兴瑞.docx'
 
+# 获取文件列表
 doc_files = os.listdir(original_docx_path)
 
 # 将doc文件转化为docx

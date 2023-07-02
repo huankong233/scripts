@@ -6,8 +6,13 @@ from tqdm import tqdm
 import urllib3
 urllib3.disable_warnings()  # 禁用证书认证和警告
 
+# 下载m3u8视频，支持多个
+# 视频存储地址的最后需要要加上/
 
-def download(m3u8_list, save_path):
+save_path = 'D:/'
+m3u8_list = ["https://978212-1316292924.cos.ap-beijing.myqcloud.com/2S3L133610.m3u8"]
+
+def download():
     path = Path(save_path)
     # 如果文件夹不存在，则创建
     if not path.is_dir():
@@ -43,6 +48,4 @@ def download_ts(ts_urls, down_path):
 
 
 if __name__ == '__main__':
-    save_path = 'D:/'
-    download(
-        ["https://978212-1316292924.cos.ap-beijing.myqcloud.com/2S3L133610.m3u8"], save_path)
+    download()
