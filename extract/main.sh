@@ -20,9 +20,9 @@ for file in $dir/*.$extension; do
   # 检查文件是否存在
   if [ -f "$file" ]; then
     if [ -z "$password" ]; then
-      7z x "$file"
+      7z x "$file" -o$dir
     else
-      7z x "$file" -p$password
+      7z x "$file" -o$dir -p$password
     fi
     echo "解压了 $file"
   fi
