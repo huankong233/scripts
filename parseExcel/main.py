@@ -28,30 +28,30 @@ if os.path.isdir(outDir):
 else:
     os.mkdir(outDir)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     data = {}
 
-    df = pandas.read_excel(f"{doc_dir}/{doc_name}", index_col=None,
-                           na_values=['NA'], usecols=cols)
+    df = pandas.read_excel(
+        f"{doc_dir}/{doc_name}", index_col=None, na_values=["NA"], usecols=cols
+    )
 
     # 格式化数据
     for index, col_index in enumerate(cols):
-        if (index == 0):
+        if index == 0:
             # 第一列（名称列）
             col_name = df.columns[col_index]
             for index, name in enumerate(df[col_name]):
                 # 正则处理
-                if (not regex):
-                    data[index] = {'name': name}
+                if not regex:
+                    data[index] = {"name": name}
                     continue
                 else:
                     match = re.search(regex_expression, name)
 
-                if (match):
-                    data[index] = {'name': match.group(1)}
+                if match:
+                    data[index] = {"name": match.group(1)}
                 else:
-                    data[index] = {'name': name}
+                    data[index] = {"name": name}
         else:
             col_name = df.columns[col_index]
             for index, file_name in enumerate(df[col_name]):
