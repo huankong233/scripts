@@ -5,9 +5,9 @@ from tqdm import tqdm
 import threading
 
 # 输入
-src_dir = "akt"
+src_dir = r"input"
 # 输出
-dst_dir = "c"
+dst_dir = r"output"
 
 video = {
     # 自动覆盖源文件
@@ -107,7 +107,7 @@ def compress(filename, src, dst):
             # 输入文件
             f'-i "{src}"',
             # 输出文件
-            f"{dst}",
+            f'"{dst}"',
             # 输出进度(不可去除)
             "-progress pipe:1",
         ]
