@@ -79,7 +79,7 @@ def compress(filename, src, dst):
         ]
 
         process = subprocess.Popen(
-            " ".join(ffmpeg_cmd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
 
         while True:
@@ -113,7 +113,7 @@ def compress(filename, src, dst):
         ]
 
         process = subprocess.Popen(
-            " ".join(ffmpeg_cmd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
 
         while True:
