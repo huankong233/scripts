@@ -46,7 +46,20 @@ max_threads = 3
 def compress(filename, src, dst):
     if os.path.splitext(filename)[1] in video_exts:
         # 获取总帧数
-        ffprobe_cmd = f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "{src}"'
+        ffprobe_cmd = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-count_packets",
+            "-show_entries",
+            "stream=nb_read_packets",
+            "-of",
+            "csv=p=0",
+            src,
+        ]
+
         all_frames = float(subprocess.run(ffprobe_cmd, stdout=subprocess.PIPE).stdout)
         pbar = tqdm(total=all_frames, unit="frame", desc=f'压缩视频: "{filename}"')
 
@@ -55,28 +68,41 @@ def compress(filename, src, dst):
             # 隐藏不必要的信息
             "-hide_banner",
             # 使用硬件加速
-            f'-hwaccel {video["hwaccel"]}',
+            "-hwaccel",
+            video["hwaccel"],
             # 自动覆盖源文件
-            f'{"-y" if video["override"] else ""}',
+            "-y" if video["override"] else None,
             # 输入文件
-            f'-i "{src}"',
+            "-i",
+            src,
             # 编码器
-            f'-c:v {video["encode"]}',
+            "-c:v",
+            video["encode"],
             # 视频比特率
-            f'-b:v {video["bit_rate"]}',
+            "-b:v",
+            video["bit_rate"],
             # 分辨率
-            f'-vf scale={video["resolution"]}',
+            "-vf",
+            f'scale={video["resolution"]}',
             # crf
-            f'-crf {video["crf"]}',
+            "-crf",
+            video["crf"],
             # 帧数
-            f'-r {video["fps"]}' if video["fps"] else "",
+            "-r" if video["fps"] else None,
+            video["fps"] or None,
             # 输出格式
-            f'-f {video["formats"]}',
+            "-f",
+            video["formats"],
             # 输出
-            f'-c:a copy "{dst}"',
+            "-c:a",
+            "copy",
+            dst,
             # 输出进度(不可去除)
-            "-progress pipe:1",
+            "-progress",
+            "pipe:1",
         ]
+
+        ffmpeg_cmd = [x for x in ffmpeg_cmd if x is not None]
 
         process = subprocess.Popen(
             ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -103,14 +129,18 @@ def compress(filename, src, dst):
             # 隐藏不必要的信息
             "-hide_banner",
             # 自动覆盖源文件
-            f'{"-y" if image["override"] else ""}',
+            f'{"-y" if image["override"] else None}',
             # 输入文件
-            f'-i "{src}"',
+            "-i",
+            f"{src}",
             # 输出文件
-            f'"{dst}"',
+            f"{dst}",
             # 输出进度(不可去除)
-            "-progress pipe:1",
+            "-progress",
+            "pipe:1",
         ]
+
+        ffmpeg_cmd = [x for x in ffmpeg_cmd if x is not None]
 
         process = subprocess.Popen(
             ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
