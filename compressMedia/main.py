@@ -18,8 +18,8 @@ video = {
     "encode": "h264_nvenc",
     # crf
     "crf": "23",
-    # 码率
-    "frame_rate": "5M",
+    # 视频比特率
+    "bit_rate": "5M",
     # 帧数
     "fps": False,
     # 分辨率
@@ -62,8 +62,8 @@ def compress(filename, src, dst):
             f'-i "{src}"',
             # 编码器
             f'-c:v {video["encode"]}',
-            # 码率
-            f'-b:v {video["frame_rate"]}',
+            # 视频比特率
+            f'-b:v {video["bit_rate"]}',
             # 分辨率
             f'-vf scale={video["resolution"]}',
             # crf
