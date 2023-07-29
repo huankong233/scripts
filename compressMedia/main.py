@@ -37,7 +37,7 @@ image = {
 video_exts = [".mp4", ".avi", ".mkv", ".flv", ".mov"]
 
 # 图片
-image_exts = [".jpg", ".png", ".gif", ".bmp", ".tif"]
+image_exts = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif"]
 
 # 设置最大线程数
 max_threads = 3
