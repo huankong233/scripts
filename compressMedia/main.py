@@ -19,51 +19,81 @@ parser.add_argument(
     "-o",
     "--output",
     type=str,
-    required=True,
-    help="输出文件夹的路径",
-)
-parser.add_argument(
-    "-v",
-    "--video",
-    action="store_true",
-    help="是否处理视频文件",
-)
-parser.add_argument(
-    "-p",
-    "--image",
-    action="store_true",
-    help="是否处理图片文件",
+    # required=True,
+    help="输出文件夹的路径，不输入则使用输入文件夹路径",
 )
 parser.add_argument(
     "-t",
     "--threads",
     type=int,
-    default=3,
-    help="设置最大线程数，默认为3",
+    default=5,
+    help="设置最大线程数，默认5",
+)
+parser.add_argument(
+    "-a",
+    "--acceleration",
+    action="store_true",
+    help="开启硬件加速(auto)，默认关闭",
+)
+parser.add_argument(
+    "-e",
+    "--encoder",
+    type=str,
+    default="h264_nvenc",
+    help="设置视频目标编码，默认为h264_nvenc，支持编码可使用ffmpeg -encoders查看",
+)
+parser.add_argument(
+    "-c",
+    "--crf",
+    type=int,
+    default=23,
+    help="设置视频压缩的CRF，范围1-51，18以下无损，18-22高质量，22-27中等质量，51质量最差，默认23",
+)
+parser.add_argument(
+    "-b",
+    "--bitrate",
+    type=str,
+    default="3M",
+    help="设置视频目标比特率，默认3M",
+)
+parser.add_argument(
+    "-f",
+    "--fps",
+    type=int,
+    default=None,
+    help="设置视频目标帧数",
+)
+parser.add_argument(
+    "-m",
+    "--format",
+    type=str,
+    default="mp4",
+    help="设置视频目标格式，默认mp4，支持格式可使用ffmpeg -formats查看",
+)
+parser.add_argument(
+    "-r",
+    "--resolution",
+    type=str,
+    default=None,
+    help="设置视频目标分辨率，默认为视频原始分辨率",
 )
 args = parser.parse_args()
 
 # 输入
 src_dir = args.input
 # 输出
-dst_dir = args.output
+dst_dir = args.output if args.output else src_dir
 
 video = {
-    # 使用硬件加速
-    "hwaccel": "auto",
-    # 编码器
-    "encode": "h264_nvenc",
-    # crf
-    "crf": "23",
-    # 视频比特率
-    "bit_rate": "5M",
-    # 帧数
-    "fps": False,
-    # 分辨率
-    "resolution": "1920:1080",
-    # 输出格式
-    "formats": "mp4",
+    "hwaccel": "auto" if args.acceleration else "none",
+    "encode": args.encoder,
+    "crf": str(args.crf),
+    "bit_rate": args.bitrate,
+    "fps": args.fps,
+    "resolution": args.resolution,
+    "formats": args.format,
 }
+
 
 image = {}
 
@@ -75,10 +105,12 @@ image_exts = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif"]
 
 if src_dir == dst_dir:
     answer = input(f"输入和输出路径相同，是否需要覆盖？(Y/N): ")
+    # override = answer.lower() == "y"
     if answer.lower() == "y":
         override = True
     else:
         override = False
+        exit(0)
 
 def compress(filename, src, dst):
 
@@ -101,13 +133,23 @@ def compress(filename, src, dst):
             "v:0",
             "-count_packets",
             "-show_entries",
-            "stream=nb_read_packets",
+            "stream=nb_read_packets,width,height",
             "-of",
             "csv=p=0",
             src,
         ]
 
-        all_frames = float(subprocess.run(ffprobe_cmd, stdout=subprocess.PIPE).stdout)
+        ffprobe_output = subprocess.run(ffprobe_cmd, stdout=subprocess.PIPE).stdout.decode("utf-8")
+        ffprobe_info = ffprobe_output.strip().split(",")
+        # print(f"{ffprobe_info}")
+        video_width = int(ffprobe_info[0])
+        video_height = int(ffprobe_info[1])
+        all_frames = float(ffprobe_info[2])
+
+        # Use original resolution if no resolution is specified
+        if video["resolution"] is None:
+            video["resolution"] = f"{video_width}:{video_height}"
+
         pbar = tqdm(total=all_frames, unit="frame", desc=f'压缩视频: "{filename}"')
 
         ffmpeg_cmd = [
