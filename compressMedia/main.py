@@ -79,11 +79,13 @@ def compress(filename, src, dst):
     if src == dst:
         file_name, file_ext = os.path.splitext(src)
         tmp_path = file_name + "_temp" + file_ext
-        output_path = tmp_path
-        override = True
-    else:
-        output_path = dst
-        override = False
+        answer = input(f"{filename}输入和输出路径相同，是否需要覆盖？(Y/N): ")
+        if answer.lower() == "y":
+            output_path = tmp_path
+            override = True
+        else:
+            output_path = dst
+            override = False
 
     if os.path.splitext(filename)[1] in video_exts:
         # 获取总帧数
