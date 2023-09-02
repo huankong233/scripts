@@ -5,9 +5,17 @@ import subprocess
 from tqdm import tqdm
 import threading
 import argparse
+import time
+
+# Variables to store statistics
+total_files = 0
+total_file_size_before = 0
+total_file_size_after = 0
+total_compression_time = 0
+total_space_saved = 0
 
 # 创建一个解析器对象，添加命令行参数
-parser = argparse.ArgumentParser(description="使用ffmpeg工具来压缩视频和图片文件")
+parser = argparse.ArgumentParser(description="使用ffmpeg压缩视频和图片文件")
 parser.add_argument(
     "-i",
     "--input",
@@ -113,7 +121,9 @@ if src_dir == dst_dir:
         exit(0)
 
 def compress(filename, src, dst):
-
+    global total_files, total_file_size_before, total_file_size_after, total_compression_time, total_space_saved
+    start_time = time.time()
+    
     output_path = dst
 
     if override:
@@ -121,7 +131,9 @@ def compress(filename, src, dst):
         tmp_path = file_name + "_temp" + file_ext
         output_path = tmp_path
 
-
+    # Get the size of the source file
+    src_size = os.path.getsize(src)
+    total_file_size_before += src_size
 
     if os.path.splitext(filename)[1] in video_exts:
         # 获取总帧数
@@ -208,6 +220,14 @@ def compress(filename, src, dst):
                         if match:
                             now_frame = float(match.group(1))
                             pbar.update(now_frame - pbar.n)
+                            
+        compressed_size = os.path.getsize(output_path)
+        compression_time = time.time() - start_time
+
+        total_file_size_after += compressed_size
+        total_compression_time += compression_time
+        total_space_saved += src_size - compressed_size
+        total_files += 1
     else:
         pbar = tqdm(total=1, unit="frame", desc=f'压缩图片: "{filename}"')
         ffmpeg_cmd = [
@@ -229,7 +249,15 @@ def compress(filename, src, dst):
         process = subprocess.Popen(
             ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
+        
+        compressed_size = os.path.getsize(output_path)
+        compression_time = time.time() - start_time
 
+        total_file_size_after += compressed_size
+        total_compression_time += compression_time
+        total_space_saved += src_size - compressed_size
+        total_files += 1
+        
         while True:
             if process.poll() is not None:
                 pbar.update(1)
@@ -267,5 +295,16 @@ if __name__ == "__main__":
                     target=compress, args=(filename, src_path, dst_path)
                 )
                 thread.start()
+                
             else:
                 print(f"{filename}不支持处理")
+
+        # Wait for all threads to complete
+        thread.join()
+
+    # Print the statistics
+    print(f"总数量: {total_files}     ")
+    print(f"压缩前: {total_file_size_before} bytes")
+    print(f"压缩后: {total_file_size_after} bytes")
+    print(f"总耗时: {total_compression_time} 秒")
+    print(f"腾出了{total_space_saved} bytes空间")
