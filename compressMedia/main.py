@@ -1,17 +1,60 @@
+# 导入模块
 import os
 import re
 import subprocess
 from tqdm import tqdm
 import threading
+import logging  # 添加logging模块
+import argparse  # 添加argparse模块
+
+# 设置日志格式和级别
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO
+)
+
+# 创建一个解析器对象，添加命令行参数
+parser = argparse.ArgumentParser(description="使用ffmpeg工具来压缩视频和图片文件")
+parser.add_argument(
+    "-i",
+    "--input",
+    type=str,
+    required=True,
+    help="输入文件夹的路径",
+)
+parser.add_argument(
+    "-o",
+    "--output",
+    type=str,
+    required=True,
+    help="输出文件夹的路径",
+)
+parser.add_argument(
+    "-v",
+    "--video",
+    action="store_true",
+    help="是否处理视频文件",
+)
+parser.add_argument(
+    "-p",
+    "--image",
+    action="store_true",
+    help="是否处理图片文件",
+)
+parser.add_argument(
+    "-t",
+    "--threads",
+    type=int,
+    default=3,
+    help="设置最大线程数，默认为3",
+)
+args = parser.parse_args()
 
 # 输入
-src_dir = r"input"
+src_dir = args.input  # 从命令行参数获取输入文件夹的路径
 # 输出
-dst_dir = r"output"
+dst_dir = args.output  # 从命令行参数获取输出文件夹的路径
 
 video = {
-    # 自动覆盖源文件
-    "override": True,
     # 使用硬件加速
     "hwaccel": "auto",
     # 编码器
@@ -28,10 +71,7 @@ video = {
     "formats": "mp4",
 }
 
-image = {
-    # 自动覆盖源文件
-    "override": True
-}
+image = {}
 
 # 视频
 video_exts = [".mp4", ".avi", ".mkv", ".flv", ".mov"]
@@ -39,11 +79,21 @@ video_exts = [".mp4", ".avi", ".mkv", ".flv", ".mov"]
 # 图片
 image_exts = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif"]
 
-# 设置最大线程数
-max_threads = 3
-
 
 def compress(filename, src, dst):
+
+    # 判断输入与输出路径是否相同，如果相同则在原本文件名.后缀之前加一个_temp作为临时文件，否则直接使用输出路径
+    if src == dst:
+        file_name, file_ext = os.path.splitext(src) # 分割文件名和后缀名
+        tmp_path = file_name + "_temp" + file_ext # 在文件名.后缀之前加一个_temp作为临时文件的路径
+        output_path = tmp_path # 将输出路径设为临时文件的路径
+        override = True # 设置覆盖标志为真，表示需要覆盖源文件
+    else:
+        output_path = dst # 将输出路径设为目标路径
+        override = False # 设置覆盖标志为假，表示不需要覆盖源文件
+
+
+
     if os.path.splitext(filename)[1] in video_exts:
         # 获取总帧数
         ffprobe_cmd = [
@@ -70,8 +120,6 @@ def compress(filename, src, dst):
             # 使用硬件加速
             "-hwaccel",
             video["hwaccel"],
-            # 自动覆盖源文件
-            "-y" if video["override"] else None,
             # 输入文件
             "-i",
             src,
@@ -96,7 +144,7 @@ def compress(filename, src, dst):
             # 输出
             "-c:a",
             "copy",
-            dst,
+            output_path,
             # 输出进度(不可去除)
             "-progress",
             "pipe:1",
@@ -107,7 +155,6 @@ def compress(filename, src, dst):
         process = subprocess.Popen(
             ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
-
         while True:
             if process.poll() is not None:
                 pbar.close()
@@ -128,13 +175,11 @@ def compress(filename, src, dst):
             "ffmpeg",
             # 隐藏不必要的信息
             "-hide_banner",
-            # 自动覆盖源文件
-            f'{"-y" if image["override"] else None}',
             # 输入文件
             "-i",
             f"{src}",
             # 输出文件
-            f"{dst}",
+            f"{output_path}",
             # 输出进度(不可去除)
             "-progress",
             "pipe:1",
@@ -154,26 +199,30 @@ def compress(filename, src, dst):
                 semaphore.release()
                 break
 
+    # 如果需要覆盖源文件，使用os.replace函数将临时文件替换到源文件，并删除临时文件
+    if override:
+        os.replace(tmp_path, src) # 替换文件
+        # os.remove(tmp_path) # 删除临时文件
+
 
 if __name__ == "__main__":
     # 创建一个信号量对象，用于控制线程数
-    semaphore = threading.Semaphore(max_threads)
+    semaphore = threading.Semaphore(args.threads)  # 从命令行参数获取最大线程数
 
     # 遍历源文件夹中的所有文件
     for root, dirs, files in os.walk(src_dir):
         # 遍历当前子文件夹中的所有文件
         for filename in files:
             file_ext = os.path.splitext(filename)[1]
-            if file_ext in video_exts or file_ext in image_exts:
+            if (file_ext in video_exts) or (
+                file_ext in image_exts
+            ):  # 根据命令行参数判断是否处理视频或图片文件
                 # 获取源文件和目标文件的完整路径
                 src_path = os.path.join(root, filename)
                 # 获取源文件相对于源文件夹的相对路径
                 rel_path = os.path.relpath(src_path, src_dir)
                 # 拼接输出文件夹和相对路径，得到输出文件的完整路径
-                dst_path = os.path.join(dst_dir, rel_path)
-                # 是否存在输出文件夹
-                if not os.path.exists(os.path.dirname(dst_path)):
-                    os.makedirs(os.path.dirname(dst_path))
+                dst_path = os.path.join(dst_dir, rel_path)  # 使用os.path.join函数来拼接路径
                 # 获取信号量，表示一个线程开始了，如果达到最大线程数，会阻塞等待
                 semaphore.acquire()
                 # 创建一个线程，执行压缩的函数
@@ -182,4 +231,4 @@ if __name__ == "__main__":
                 )
                 thread.start()
             else:
-                print(f"{filename}不支持处理")
+                logging.info(f"{filename}不支持处理")  # 使用logging模块来记录信息
