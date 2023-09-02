@@ -199,10 +199,15 @@ def compress(filename, src, dst):
                 semaphore.release()
                 break
 
-    # 如果需要覆盖源文件，使用os.replace函数将临时文件替换到源文件，并删除临时文件
+    # 如果需要覆盖源文件，先对比压缩后的缓存文件和压缩前源文件的大小
     if override:
-        os.replace(tmp_path, src) # 替换文件
-        # os.remove(tmp_path) # 删除临时文件
+        tmp_size = os.path.getsize(tmp_path) # 获取临时文件的大小
+        src_size = os.path.getsize(src) # 获取源文件的大小
+        if tmp_size < src_size: # 如果临时文件小于源文件
+            os.replace(tmp_path, src) # 替换文件
+        else: # 如果临时文件大于或等于源文件
+            logging.info(f"{filename}压缩后的大小大于或等于源文件，舍弃") # 使用logging模块输出信息
+        os.remove(tmp_path) # 删除临时文件
 
 
 if __name__ == "__main__":
