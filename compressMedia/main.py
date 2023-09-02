@@ -73,19 +73,23 @@ video_exts = [".mp4", ".avi", ".mkv", ".flv", ".mov"]
 # 图片
 image_exts = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif"]
 
+if src_dir == dst_dir:
+    answer = input(f"输入和输出路径相同，是否需要覆盖？(Y/N): ")
+    if answer.lower() == "y":
+        override = True
+    else:
+        override = False
 
 def compress(filename, src, dst):
 
-    if src == dst:
+    output_path = dst
+
+    if override:
         file_name, file_ext = os.path.splitext(src)
         tmp_path = file_name + "_temp" + file_ext
-        answer = input(f"{filename}输入和输出路径相同，是否需要覆盖？(Y/N): ")
-        if answer.lower() == "y":
-            output_path = tmp_path
-            override = True
-        else:
-            output_path = dst
-            override = False
+        output_path = tmp_path
+
+
 
     if os.path.splitext(filename)[1] in video_exts:
         # 获取总帧数
