@@ -1,6 +1,6 @@
 import os
 
-srcDir = r"C:\Users\huan_kong\Downloads\Custom_Udon"
+srcDir = r"srcDir"
 
 for root, dirs, files in os.walk(srcDir):
     # 遍历当前子文件夹中的所有文件
