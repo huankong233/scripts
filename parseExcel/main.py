@@ -67,4 +67,7 @@ if __name__ == "__main__":
         for filename, filepath in value["data"].items():
             print(f"姓名: {name}\t数据名: {filename}\t数据源: {filepath}")
             root, ext = os.path.splitext(filepath)
-            shutil.copy(filepath, f"{outDir}/{name}{ext}")  # 复制文件到文件夹
+            if len(cols) > 2:
+                shutil.copy(filepath, f"{outDir}/{name}/{filename}{ext}")  # 复制文件到文件夹
+            else:
+                shutil.copy(filepath, f"{outDir}/{name}{ext}")  # 复制文件到文件夹
