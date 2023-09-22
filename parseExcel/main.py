@@ -17,18 +17,20 @@ import shutil
 outDir = "./dist"  # 输出文件夹
 doc_dir = "./docs"  # 输入文件夹
 doc_name = "图片截图收集（收集结果）.xlsx"  # 文档名
-cols = range(0, 3)  # 需要读取的列
-# cols = [0, 1, 2]  # 需要读取的列(手动定义)
+# cols = range(0, 2)  # 需要读取的列
+cols = [2, 3]  # 需要读取的列(手动定义)
 regex = True  # 是否需要使用正则提取名称
 regex_expression = r"学生：(\w+)-\d+-\w+"  # 正则的表达式
-
-if os.path.isdir(outDir):
-    shutil.rmtree(outDir)
-    os.mkdir(outDir)
-else:
-    os.mkdir(outDir)
+make_dir = False
 
 if __name__ == "__main__":
+    # 清空输出文件夹
+    if os.path.isdir(outDir):
+        shutil.rmtree(outDir)
+        os.mkdir(outDir)
+    else:
+        os.mkdir(outDir)
+
     data = {}
 
     df = pandas.read_excel(
@@ -36,10 +38,10 @@ if __name__ == "__main__":
     )
 
     # 格式化数据
-    for index, col_index in enumerate(cols):
+    for index in range(0, len(cols)):
+        col_name = df.columns[index]
         if index == 0:
             # 第一列（名称列）
-            col_name = df.columns[col_index]
             for index, name in enumerate(df[col_name]):
                 # 正则处理
                 if not regex:
@@ -49,21 +51,20 @@ if __name__ == "__main__":
                     match = re.search(regex_expression, name)
 
                 if match:
-                    data[index] = {"name": match.group(1)}
+                    data[index] = {"name": match.group(1), "data": {}}
                 else:
-                    data[index] = {"name": name}
+                    data[index] = {"name": name, "data": {}}
         else:
-            col_name = df.columns[col_index]
             for index, file_name in enumerate(df[col_name]):
-                file_path = f"{doc_dir}/{col_name}/{file_name}"
-                data[index][col_name] = file_path
+                data[index]["data"][col_name] = f"{doc_dir}/{col_name}/{file_name}"
 
     # 复制文件
     for key, value in data.items():
         name = value["name"]
-        os.mkdir(f"{outDir}/{name}")  # 创建文件夹
-        for file, path in value.items():
-            if file != "name":
-                print(f"姓名:{name},数据名:{file},数据源:{path}")
-                root, ext = os.path.splitext(path)
-                shutil.copy(path, f"{outDir}/{name}/{file}{ext}")  # 复制文件到文件夹
+        if make_dir:
+            os.mkdir(f"{outDir}/{name}")  # 创建文件夹
+
+        for filename, filepath in value["data"].items():
+            print(f"姓名: {name}\t数据名: {filename}\t数据源: {filepath}")
+            root, ext = os.path.splitext(filepath)
+            shutil.copy(filepath, f"{outDir}/{name}{ext}")  # 复制文件到文件夹
