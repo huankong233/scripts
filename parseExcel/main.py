@@ -17,11 +17,10 @@ import shutil
 outDir = "./dist"  # 输出文件夹
 doc_dir = "./docs"  # 输入文件夹
 doc_name = "图片截图收集（收集结果）.xlsx"  # 文档名
-# cols = range(0, 2)  # 需要读取的列
-cols = [2, 3]  # 需要读取的列(手动定义)
+cols = range(2, 5)  # 需要读取的列
+# cols = [2, 4]  # 需要读取的列(手动定义)
 regex = True  # 是否需要使用正则提取名称
 regex_expression = r"学生：(\w+)-\d+-\w+"  # 正则的表达式
-make_dir = False
 
 if __name__ == "__main__":
     # 清空输出文件夹
@@ -61,13 +60,12 @@ if __name__ == "__main__":
     # 复制文件
     for key, value in data.items():
         name = value["name"]
-        if make_dir:
-            os.mkdir(f"{outDir}/{name}")  # 创建文件夹
-
         for filename, filepath in value["data"].items():
             print(f"姓名: {name}\t数据名: {filename}\t数据源: {filepath}")
             root, ext = os.path.splitext(filepath)
             if len(cols) > 2:
+                if not os.path.isdir(f"{outDir}/{name}"):
+                    os.mkdir(f"{outDir}/{name}")  # 创建文件夹
                 shutil.copy(filepath, f"{outDir}/{name}/{filename}{ext}")  # 复制文件到文件夹
             else:
                 shutil.copy(filepath, f"{outDir}/{name}{ext}")  # 复制文件到文件夹
