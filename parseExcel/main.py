@@ -16,8 +16,8 @@ import shutil
 
 outDir = "./dist"  # 输出文件夹
 doc_dir = "./docs"  # 输入文件夹
-doc_name = "图片截图收集（收集结果）.xlsx"  # 文档名
-cols = range(2, 5)  # 需要读取的列
+doc_name = "1.xlsx"  # 文档名
+cols = range(2, 4)  # 需要读取的列
 # cols = [2, 4]  # 需要读取的列(手动定义)
 regex = True  # 是否需要使用正则提取名称
 regex_expression = r"学生：(\w+)-\d+-\w+"  # 正则的表达式

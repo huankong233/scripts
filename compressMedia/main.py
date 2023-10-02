@@ -65,7 +65,7 @@ def compress(filename, src, dst, override, file_type):
             video["hwaccel"],
             # 输入文件
             "-i",
-            src,
+            f"{src}",
             # 编码器
             "-c:v",
             video["encode"],
@@ -295,6 +295,11 @@ if __name__ == "__main__":
             src_path = os.path.join(root, filename)
             rel_path = os.path.relpath(src_path, src_dir)
             dst_path = os.path.join(dst_dir, rel_path)
+
+            file_path = os.path.dirname(dst_path)
+
+            if not os.path.exists(file_path):
+                os.makedirs(file_path)
 
             if file_ext in video_exts:
                 semaphore.acquire()
