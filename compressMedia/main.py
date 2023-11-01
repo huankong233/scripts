@@ -6,7 +6,7 @@ import threading
 import argparse
 
 # 文件后缀
-video_exts = [".mp4", ".avi", ".mkv", ".flv", ".mov"]
+video_exts = [".mp4", ".avi", ".mkv", ".flv", ".mov", ".ts"]
 image_exts = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif"]
 
 # 处理参数
@@ -22,8 +22,8 @@ def convert_path(path):
 
 def compress(filename, src, dst, override, file_type):
     if override:
-        file_name, file_ext = os.path.splitext(src)
-        temp_path = file_name + "_temp" + file_ext
+        file_name = os.path.splitext(src)
+        temp_path = file_name + "_temp" + f".{video['formats']}"
 
     if file_type == "video":
         # 获取总帧数
@@ -45,7 +45,8 @@ def compress(filename, src, dst, override, file_type):
             ffprobe_cmd, stdout=subprocess.PIPE
         ).stdout.decode("utf-8")
 
-        ffprobe_info = ffprobe_output.strip().split(",")
+        ffprobe_info = ffprobe_output.strip().split("\r\n")[0].split(",")
+        
         video_width = int(ffprobe_info[0])
         video_height = int(ffprobe_info[1])
         all_frames = float(ffprobe_info[2])
@@ -300,6 +301,9 @@ if __name__ == "__main__":
 
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
+                
+            # 修改输出文件的后缀
+            dst_path = dst_path.replace(file_ext, f".{video['formats']}")
 
             if file_ext in video_exts:
                 semaphore.acquire()
