@@ -9,7 +9,7 @@ conn1 = sqlite3.connect(baicizhantopicproblem)
 #产生游标
 cur = conn1.cursor()
 #获得已背单词id
-cur.execute("SELECT topic_id FROM ts_learn_offline_dotopic_sync_ids_575 ORDER BY create_at")
+cur.execute("SELECT topic_id FROM ts_learn_offline_dotopic_sync_ids_575 WHERE do_num > 0 ORDER BY create_at")
 wordId = cur.fetchall()
 #关闭链接
 conn1.close()
