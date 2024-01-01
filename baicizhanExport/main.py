@@ -34,7 +34,8 @@ def getBaicizhandoexampleinfo(id):
     baicizhandoexampleinfoCursor.execute(
         f"SELECT * FROM ZBOOKFINISHINFO WHERE book_id = {id}"
     )
-    return baicizhandoexampleinfoCursor.fetchall()[0][2]
+    data = baicizhandoexampleinfoCursor.fetchall()
+    return "已被删除的书" if len(data) == 0 else data[0][2]
 
 
 def get_databases(database):
