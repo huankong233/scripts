@@ -1,22 +1,35 @@
 import sqlite3
 import json
 import re
+import os
+
+__file__ = os.path.dirname(os.path.abspath(__file__)) + "/"
 
 baicizhantopicproblem = (
-    input("请输入baicizhantopicproblem.db路径:") or "./baicizhantopicproblem.db"
+    input("请输入baicizhantopicproblem.db路径:") or __file__ + "./baicizhantopicproblem.db"
 )
 baicizhantopicproblemConn = sqlite3.connect(baicizhantopicproblem)
 baicizhantopicproblemCursor = baicizhantopicproblemConn.cursor()
 
 baicizhandoexampleinfo = (
-    input("请输入baicizhandoexampleinfo.db路径:") or "./baicizhandoexampleinfo.db"
+    input("请输入baicizhandoexampleinfo.db路径:") or __file__ + "./baicizhandoexampleinfo.db"
 )
 baicizhandoexampleinfoConn = sqlite3.connect(baicizhandoexampleinfo)
 baicizhandoexampleinfoCursor = baicizhandoexampleinfoConn.cursor()
 
-lookup = input("请输入lookup.db路径:") or "./lookup.db"
+lookup = input("请输入lookup.db路径:") or __file__ + "./lookup.db"
 lookupConn = sqlite3.connect(lookup)
 lookupCursor = lookupConn.cursor()
+
+slice = input("是否需要裁切(y/n):")
+if slice == "y" or slice == "Y":
+    slice = True
+else:
+    slice = False
+
+if slice:
+    sliceWord = input("需要裁剪的词:") or "cheek"
+
 
 # 获得已背词库
 baicizhantopicproblemCursor.execute(
@@ -88,9 +101,11 @@ data = []
 
 for word in words:
     word = get_word(word[0])
+    if slice and word[0] == sliceWord:
+        data = []
     data.append({"Q": word[0], "A": word[2]})
 
-file = open("data.json", "w", encoding="utf-8")
+file = open(__file__ + "data.json", "w", encoding="utf-8")
 file.write(json.dumps(data, ensure_ascii=False, indent=2))
 
 print(f"共{len(data)}个单词")
