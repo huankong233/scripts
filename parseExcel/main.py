@@ -66,6 +66,8 @@ if __name__ == "__main__":
             if len(cols) > 2:
                 if not os.path.isdir(f"{outDir}/{name}"):
                     os.mkdir(f"{outDir}/{name}")  # 创建文件夹
-                shutil.copy(filepath, f"{outDir}/{name}/{filename}{ext}")  # 复制文件到文件夹
+                shutil.copy(
+                    filepath, f"{outDir}/{name}/{filename}{ext}"
+                )  # 复制文件到文件夹
             else:
                 shutil.copy(filepath, f"{outDir}/{name}{ext}")  # 复制文件到文件夹
